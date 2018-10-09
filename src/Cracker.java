@@ -31,6 +31,9 @@ public class Cracker {
 
             shadowReader.close();
             System.out.println("Done!");
+            for (ShadowEntry shadowEntry: shadowEntries) {
+                System.out.println(shadowEntry.username + ":" + shadowEntry.salt + ":" + shadowEntry.hash);
+            }
         } catch (FileNotFoundException e) {
             System.out.println("File \"shadow-simple\" not found!");
         }
@@ -50,29 +53,30 @@ public class Cracker {
 
             passwordsReader.close();
             System.out.println("Done!");
+
+            // Look for collisions
+            System.out.println("Looking for collisions...");
+            /*int cycle = 0;*/
+            int passwordsFound = 0;
+            for (ShadowEntry shadowEntry: shadowEntries) {
+                for(String password: commonPasswords){
+                    String hashedPassword = MD5Shadow.crypt(password ,shadowEntry.salt);
+                /*System.out.println(cycle + ": " + hashedPassword + " - " + shadowEntry.hash);
+                cycle++;*/
+                    if (hashedPassword.equals(shadowEntry.hash)){
+                        System.out.println(shadowEntry.username + ":" + password);
+                        passwordsFound++;
+                    }
+                }
+            }
+            System.out.println("Found " + passwordsFound + " passwords!");
+            System.out.println("Finished looking for collisions, exiting Cracker");
         } catch (FileNotFoundException e) {
-            System.out.println("File \"common-passwords.txt\" not found!");
+            System.out.println("File \"common-passwords.txt\" not found! Exiting Cracker now");
         }
         catch(IOException e){
             System.out.println(e.getMessage());
         }
-
-        System.out.println("Looking for collisions...");
-        /*int cycle = 0;*/
-        int passwordsFound = 0;
-        for (ShadowEntry shadowEntry: shadowEntries) {
-            for(String password: commonPasswords){
-                String hashedPassword = MD5Shadow.crypt(password ,shadowEntry.salt);
-                /*System.out.println(cycle + ": " + hashedPassword + " - " + shadowEntry.hash);
-                cycle++;*/
-                if (hashedPassword.equals(shadowEntry.hash)){
-                    System.out.println(shadowEntry.username + ":" + password);
-                    passwordsFound++;
-                }
-            }
-        }
-        System.out.println("Found " + passwordsFound + " passwords!");
-        System.out.println("Finished looking for collisions, exiting SimpleCracker");
     }
 
 }
